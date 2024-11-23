@@ -1,0 +1,34 @@
+name: Deploy EC2 and Publish Website
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    - name: Initialize Terraform
+      run: terraform init
+
+    - name: Apply Terraform
+      run: terraform apply -auto-approve"
+
+    - name: Configure Ansible
+      run: |
+        sudo apt update
+        sudo apt install -y ansible
+        ansible-playbook -i inventory install_docker.yml
+
+    - name: Test Website
+      run: curl http://<EC2_INSTANCE_PUBLIC_IP>
